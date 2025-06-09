@@ -25,7 +25,8 @@ async def register_user(user_id: int, username: str):
             "INSERT INTO users (telegram_id, username) VALUES ($1, $2)",
             user_id, username
         )
-        print(f"🟢 تم تسجيل مستخدم جديد: {username} ({u
+        print(f"🟢 تم تسجيل مستخدم جديد: {username} ({user_id})")
+
 
 
 @router.message()
