@@ -1,3 +1,5 @@
+--no-deps
+
 aiogram==3.0.0b7
 aiohttp==3.9.5
 asyncpg==0.29.0
