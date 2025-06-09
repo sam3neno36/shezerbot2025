@@ -26,3 +26,8 @@ async def register_user(user_id: int, username: str):
             user_id, username
         )
         print(f"🟢 تم تسجيل مستخدم جديد: {username} ({u
+
+
+@router.message()
+async def echo_all(message: Message):
+    await message.answer("✅ تم استلام رسالتك.")
