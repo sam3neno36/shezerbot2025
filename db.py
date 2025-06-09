@@ -2,7 +2,7 @@
 import asyncpg
 import ssl
 
-DB_URL = "postgresql://postgres:shezer2025$@db.kkblzjitvdcydonfssed.supabase.co:5432/postgres"
+DB_URL = "postgres://your_user:your_password@your_host:your_port/your_db"
 
 async def connect_db():
     try:
