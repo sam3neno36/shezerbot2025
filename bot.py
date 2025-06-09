@@ -1,50 +1,39 @@
-# bot.py
 import asyncio
-import ssl
+import os
+from aiohttp import web
 from aiogram import Bot, Dispatcher, types
-from aiogram.utils import executor
-from db import connect_db
 
-# 🔐 ضع التوكن الخاص بك هنا
 BOT_TOKEN = "8044205270:AAHkxRdbJ9GvggNb_Uq3w9eVjAukRW8xOxw"
-
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot)
 
+# نفس handler البداية
 @dp.message_handler(commands=["start"])
 async def start_handler(message: types.Message):
-    user_id = message.from_user.id
-    username = message.from_user.username or ""
-    country = message.from_user.language_code or "unknown"
+    await message.answer("👋 مرحبًا! البوت يعمل بنظام polling و الويب سيرفر مفتوح")
 
-    conn = await connect_db()
-    if conn is None:
-        await message.answer("⚠️ حدث خطأ في الاتصال بقاعدة البيانات.")
-        return
+async def on_startup(dispatcher):
+    print("🔵 بوت بدأ العمل!")
 
-    try:
-        user_exists = await conn.fetchval("SELECT 1 FROM users WHERE telegram_id = $1", user_id)
-        if user_exists:
-            await message.answer("👋 مرحبًا بعودتك!")
-        else:
-            await conn.execute(
-                "INSERT INTO users (telegram_id, username, country) VALUES ($1, $2, $3)",
-                user_id, username, country
-            )
-            await message.answer("🎉 تم تسجيلك بنجاح!")
-    except Exception as e:
-        await message.answer(f"❌ حدث خطأ أثناء حفظ بياناتك: {e}")
-    finally:
-        await conn.close()
+async def web_handler(request):
+    return web.Response(text="بوتك يعمل والويب سيرفر شغال 👍")
 
-# ✅ تشغيل البوت
 async def main():
-    conn = await connect_db()
-    if conn is None:
-        print("❌ لا يمكن المتابعة بدون اتصال بقاعدة البيانات")
-        return
-    await conn.close()
-    print("✅ البوت شغال الآن...")
+    # تهيئة ويب سيرفر aiohttp
+    app = web.Application()
+    app.add_routes([web.get('/', web_handler)])
+
+    # احصل على PORT من متغيرات البيئة أو 8000 كافتراضي
+    port = int(os.getenv('PORT', 8000))
+
+    # شغل ويب سيرفر aiohttp بشكل غير متزامن
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+    print(f"🌐 الويب سيرفر يعمل على المنفذ {port}")
+
+    # شغل البوت polling (يحجز الـ event loop الرئيسي)
     await dp.start_polling()
 
 if __name__ == "__main__":
